@@ -124,8 +124,8 @@ def create_right_panel(main_ingredients="", history="", dish_name=None, image_ur
         if place_ids:
             # --- [!!关键修改!!] ---
             # 发现有餐厅！覆盖样式
-            top_row_style = {"height": "50%"}
-            bottom_row_style = {"height": "50%"}
+            top_row_style = {"height": "60%"}
+            bottom_row_style = {"height": "40%"}
             
             # [!!新!!] 覆盖 bottom_col 样式：让表格占满 100%
             bottom_col_style = {"height": "100%"}
@@ -211,9 +211,29 @@ def create_right_panel(main_ingredients="", history="", dish_name=None, image_ur
             bottom_box = dash_table.DataTable(
                 columns=columns_config, 
                 data=table_df.to_dict("records"),
-                style_table={"height": "100%", "overflowY": "auto"},
-                style_cell={"padding": "5px"}, 
-                style_header={"fontWeight": "bold"},
+                style_table={
+                    "maxHeight": "300px",        # table scroll height
+                    "overflowY": "auto",         # vertical scroll if needed
+                    "border-radius": "15px",     # rounded corners
+                    "border": "1px solid #ccc",  # light border
+                    "box-shadow": "2px 2px 8px rgba(0,0,0,0.1)",  # subtle shadow
+                    "background-color": "#fdfdfd", # background
+                },
+                style_cell={
+                    "padding": "5px",
+                    "font-family": "Helvetica, Arial, sans-serif",   # font family
+                    "font-size": "16px",                  # font size
+                    "color": "black"                      # font color
+                },
+                style_header={
+                    "fontWeight": "bold",
+                    "font-family": "Helvetica, Arial, sans-serif", # header font family
+                    "font-size": "18px"
+                },
+                style_data={
+                    "font-family": "Helvetica, Arial, sans-serif",
+                    "font-size": "16px"
+                },
                 markdown_options={"link_target": "_blank"},
                 sort_action="native",
                 style_data_conditional=rating_style_rules,
@@ -292,6 +312,9 @@ dish_search_dropdown = dcc.Dropdown(
 
 app.layout = dbc.Container([
     html.H1("Japanese Regional Cuisine", style={"margin": "10px"}),
+
+    # Store for clicked dish
+    dcc.Store(id="clicked-dish", storage_type="session"),
 
     # Store for user location
     dcc.Store(id="user-location", storage_type="session"),
@@ -399,9 +422,10 @@ app.clientside_callback(
     Input("type-dropdown", "value"),
     Input("dietary-dropdown", "value"),
     Input("dish-search", "value"),
-    Input("user-location", "data")
+    Input("user-location", "data"),
+    Input("clicked-dish", "data")
 )
-def update_map(selected_prefectures, selected_seasons, selected_types, selected_dietary, selected_dish, user_location):
+def update_map(selected_prefectures, selected_seasons, selected_types, selected_dietary, selected_dish, user_location, clicked_dish):
     filtered = dishes.copy()
     
     if selected_prefectures:
@@ -422,9 +446,12 @@ def update_map(selected_prefectures, selected_seasons, selected_types, selected_
         lon="area_lon",
         hover_name="dish_name",
         zoom=4,
-        color_discrete_sequence=["white"],
+        color_discrete_sequence=["#FFFA00"],
         size_max=20,
     )
+
+    #Check colors for colorblindness here!
+    # https://davidmathlogic.com/colorblind/#%230043FF-%23FF6A00-%23FFFA00-%23004D40
 
     # Only show dish name in hover
     fig.update_traces(
@@ -446,7 +473,25 @@ def update_map(selected_prefectures, selected_seasons, selected_types, selected_
             showlegend=False
         )
 
-    fig.update_layout(map_style="open-street-map", margin={"r":0,"t":0,"l":0,"b":0})
+    # Add orange marker for selected dish
+    if clicked_dish:
+        selected_row = dishes[dishes["dish_name"] == clicked_dish]
+        if not selected_row.empty:
+            lat = selected_row.iloc[0]["area_lat"]
+            lon = selected_row.iloc[0]["area_lon"]
+            fig.add_scattermap(
+                lat=[lat],
+                lon=[lon],
+                mode="markers",
+                marker=dict(size=20, color="#FF6000", symbol="circle"),
+                name="Selected Dish",
+                showlegend=False,
+                hoverinfo="none"
+            )    
+
+    fig.update_layout(map_style="light", margin={"r":0,"t":0,"l":0,"b":0})
+    fig.update_layout(uirevision="keep-zoom")
+
     return fig
 
 # Right panel update
@@ -471,6 +516,17 @@ def display_dish_info(clickData, user_location): # <-- [!!修改!!] 添加 user_
                 image_url=image_url, 
                 user_location=user_location 
             )
+
+# Selected dish update
+@app.callback(
+    Output("clicked-dish", "data"),
+    Input("map", "clickData")
+)
+def store_clicked_dish(clickData):
+    if clickData:
+        return clickData["points"][0]["hovertext"]
+    return None
+
     
 
 
