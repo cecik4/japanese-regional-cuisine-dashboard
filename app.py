@@ -1,8 +1,27 @@
-from dash import Dash, dcc, html, Input, Output, dash_table
+from dash import Dash, dcc, html, Input, Output, dash_table, State
 import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
 import ast
+import numpy as np
+
+# Haversine 距离计算函数
+def haversine(lat1, lon1, lat2, lon2):
+    # 既然您确认所有餐厅都有经纬度，这里的检查是为用户位置(如果还没获取到)
+    if any(pd.isna([lat1, lon1, lat2, lon2])):
+        return np.nan
+
+    R = 6371  # 地球半径 (公里)
+
+    lat1, lon1, lat2, lon2 = map(np.radians, [lat1, lon1, lat2, lon2])
+
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+
+    a = np.sin(dlat / 2.0)**2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2.0)**2
+    c = 2 * np.arcsin(np.sqrt(a))
+    km = R * c
+    return km
 
 # Load your data
 dishes = pd.read_csv("all_dishes.csv")
@@ -23,7 +42,7 @@ box_style = {
 }
 
 # Right panel generator
-def create_right_panel(main_ingredients="", history="", dish_name=None, image_url=None):
+def create_right_panel(main_ingredients="", history="", dish_name=None, image_url=None, user_location=None):
     if dish_name is None:
         return html.Div(
             html.P("Please select a dish on the map"),
@@ -51,15 +70,50 @@ def create_right_panel(main_ingredients="", history="", dish_name=None, image_ur
         style=box_style
     )
 
-    top_row = dbc.Row(
-        [
-            dbc.Col(left_box, width=6, style={"height": "100%"}),
-            dbc.Col(right_box, width=6, style={"height": "100%"})
-        ],
-        style={"height": "50%", "margin-bottom": "10px"}
-    )
+ # --- [!!新代码!!] ---
+    # 为 "无餐厅" 情况定义消息框
+    message_box_style = {
+        "border": "3px solid black",
+        # "background-color": "black", 
+        # "color": "white",
+        "border-radius": "15px",
+        "padding": "10px",
+        # "height": "100%", # <-- [!!修改!!] 移除这一行
+        "display": "flex",
+        "align-items": "center",
+        "justify-content": "center",
+        "textAlign": "center"
+    }
 
+
+    message_box = html.Div(
+        html.P([  # <-- [!!修改!!] 改为列表以支持换行
+            "Sorry, no restaurants are recommended at the moment.", # <-- 第一行
+            html.Br(), # <-- [!!修改!!] 添加换行符
+            "We’ll be updating soon, stay tuned!" # <-- 第二行
+        ], style={"margin": "auto", "fontSize": "18px", "fontWeight": "bold"}),
+        style=message_box_style
+    )
+    # --- [!!新代码结束!!] ---
+
+# [最终代码块 - 开始]
     row = dishes[dishes["dish_name"] == dish_name]
+    
+    # --- [!!关键修改!!] ---
+    # 默认样式：假设没有餐厅
+    top_row_style = {"height": "70%"}
+    bottom_row_style = {"height": "30%"}
+    bottom_box = message_box # 默认显示消息
+
+    # [!!新!!] 默认 bottom_col 样式：用于居中小消息框
+    bottom_col_style = {
+        "height": "100%", 
+        "display": "flex", 
+        "align-items": "center", 
+        "justify-content": "center"
+    }
+    # --- [!!关键修改结束!!] ---
+
     if not row.empty and "places" in row.columns:
         places_str = row.iloc[0]["places"]
         try:
@@ -68,28 +122,131 @@ def create_right_panel(main_ingredients="", history="", dish_name=None, image_ur
             place_ids = []
 
         if place_ids:
+            # --- [!!关键修改!!] ---
+            # 发现有餐厅！覆盖样式
+            top_row_style = {"height": "50%"}
+            bottom_row_style = {"height": "50%"}
+            
+            # [!!新!!] 覆盖 bottom_col 样式：让表格占满 100%
+            bottom_col_style = {"height": "100%"}
+            # --- [!!关键修改结束!!] ---
+
             place_rows = places[places["id"].isin(place_ids)].copy()
             place_rows["rating"] = place_rows["rating"].apply(lambda x: x if pd.notna(x) else "?")
-            place_rows["distance"] = "?"
-            table_df = place_rows[["name", "distance", "rating", "price_level", "googleMapsUri"]]
-            table_df.columns = ["Place Name", "Distance", "Rating", "Price", "Link"]
-
+            
+            # 距离计算
+            user_lat = user_location.get('lat') if user_location else None
+            user_lon = user_location.get('lon') if user_location else None
+            if user_lat is not None and user_lon is not None:
+                place_rows['distance'] = place_rows.apply(
+                    lambda row: haversine(user_lat, user_lon, row['latitude'], row['longitude']),
+                    axis=1
+                )
+                place_rows['distance'] = place_rows['distance'].apply(lambda x: f"{x:.1f} km" if pd.notna(x) else "?")
+            else:
+                place_rows["distance"] = "?"
+            
+            table_df = place_rows[["name", "distance", "rating", "price_level", "googleMapsUri"]].copy()
+            table_df.columns = ["Place Name", "Distance", "Rating", "Price", "googleMapsUri"] 
+            
+            price_mapping = {
+                'PRICE_LEVEL_INEXPENSIVE': '¥',
+                'PRICE_LEVEL_MODERATE': '¥¥',
+                'PRICE_LEVEL_EXPENSIVE': '¥¥¥'
+            }
+            table_df["Price"] = table_df["Price"].map(price_mapping).fillna("?")
+            table_df["Link"] = table_df["googleMapsUri"].apply(
+                lambda x: f"[📍]({x})" if pd.notna(x) else ""
+            )
+            final_columns = ["Place Name", "Distance", "Rating", "Price", "Link"]
+            table_df = table_df[final_columns]
+            rating_style_rules = [
+                {
+                    'if': {
+                        'column_id': 'Rating',
+                        'filter_query': '{Rating} >= 4 && {Rating} is num'
+                    },
+                    'color': 'green',
+                    'fontWeight': 'bold'
+                },
+                {
+                    'if': {
+                        'column_id': 'Rating',
+                        'filter_query': '{Rating} >= 3 && {Rating} < 4 && {Rating} is num'
+                    },
+                    'color': 'orange',
+                    'fontWeight': 'bold'
+                },
+                {
+                    'if': {
+                        'column_id': 'Rating',
+                        'filter_query': '{Rating} < 3 && {Rating} is num'
+                    },
+                    'color': 'red',
+                    'fontWeight': 'bold'
+                }
+            ]
+            alignment_rules = [
+                {
+                    'if': {'column_id': ['Rating', 'Price', 'Link']}, 
+                    'textAlign': 'center' 
+                },
+                {
+                    'if': {'column_id': ['Place Name', 'Distance']},
+                    'textAlign': 'center'  
+                }
+            ]
+            columns_config = []
+            for col_name in final_columns:
+                if col_name == "Link":
+                    columns_config.append({
+                        "name": "Map", 
+                        "id": col_name,
+                        "presentation": "markdown"
+                    })
+                else:
+                    columns_config.append({"name": col_name, "id": col_name})
+            
+            # 用表格内容填充 bottom_box
             bottom_box = dash_table.DataTable(
-                columns=[{"name": c, "id": c, "presentation": "markdown"} for c in table_df.columns],
+                columns=columns_config, 
                 data=table_df.to_dict("records"),
                 style_table={"height": "100%", "overflowY": "auto"},
-                style_cell={"textAlign": "left", "padding": "5px"},
+                style_cell={"padding": "5px"}, 
                 style_header={"fontWeight": "bold"},
                 markdown_options={"link_target": "_blank"},
-                sort_action="native"
+                sort_action="native",
+                style_data_conditional=rating_style_rules,
+                style_cell_conditional=alignment_rules,
+                style_header_conditional=[
+                    {
+                        'if': {'column_id': ['Rating', 'Price', 'Link']},
+                        'textAlign': 'center'
+                    },
+                    {
+                        'if': {'column_id': ['Place Name', 'Distance']},
+                        'textAlign': 'center'
+                    }
+                ]
             )
-        else:
-            bottom_box = html.Div("This dish has no places", style={"margin": "auto", "textAlign": "center"})
-    else:
-        bottom_box = html.Div("This dish has no places", style={"margin": "auto", "textAlign": "center"})
+        # (如果 place_ids 为空, bottom_box 保持默认的 message_box, bottom_col_style 保持居中)
+    # (如果 row 为空, bottom_box 保持默认的 message_box, bottom_col_style 保持居中)
 
-    bottom_row = dbc.Row(dbc.Col(bottom_box), style={"height": "50%"})
+    # --- [!!关键修改!!] ---
+    # 现在（在所有 if/else 逻辑之后）根据动态样式创建 top_row 和 bottom_row
+    top_row = dbc.Row(
+        [
+            dbc.Col(left_box, width=6, style={"height": "100%"}),
+            dbc.Col(right_box, width=6, style={"height": "100%"})
+        ],
+        style=top_row_style  # <-- 使用动态样式
+    )
 
+    bottom_row = dbc.Row(
+        dbc.Col(bottom_box, style=bottom_col_style), # <-- [!!修改!!] 使用动态列样式
+        style=bottom_row_style
+    ) 
+# [最终代码块 - 结束]
     return html.Div(
         [
             dbc.Row(dbc.Col(html.H4(dish_name), style={"margin-bottom": "10px"})),
@@ -153,41 +310,42 @@ app.layout = dbc.Container([
                             dcc.Dropdown(
                                 id="prefecture-dropdown",
                                 options=prefecture_options,
-                                placeholder="Select prefecture(s)",
+                                placeholder="Prefecture",
                                 multi=True
-                            ), width=2
+                            ), width=2  # <-- 当前宽度
                         ),
                         dbc.Col(
                             dcc.Dropdown(
                                 id="season-dropdown",
                                 options=season_options,
-                                placeholder="Select season(s)",
+                                placeholder="Season",
                                 multi=True,
                                 searchable=False,
-                            ), width=2
+                            ), width=2  # <-- 当前宽度
                         ),
                         dbc.Col(
                             dcc.Dropdown(
                                 id="type-dropdown",
                                 options=type_options,
-                                placeholder="Select type(s)",
+                                placeholder="Type",
                                 multi=True,
                                 searchable=False,
-                            ), width=2
+                            ), width=2  # <-- 当前宽度
                         ),
                         dbc.Col(
                             dcc.Dropdown(
                                 id="dietary-dropdown",
                                 options=dietary_options,
-                                placeholder="Select dietary restriction(s)",
+                                placeholder="Dietary",
                                 multi=True,
                                 searchable=False,
-                            ), width=2
+                            ), width=2  # <-- 当前宽度
                         ),
-                        dbc.Col(dish_search_dropdown, width=4),
+                        dbc.Col(dish_search_dropdown, width=4), # <-- 当前宽度
                     ], style={"margin-bottom": "10px"}),
-
-                    dcc.Graph(id="map", style={"height": "calc(100% - 90px)", "border-radius": "15px"})
+                    
+                    # --- [!!修改!!] 调整地图高度以适应两行下拉框 ---
+                    dcc.Graph(id="map", style={"height": "calc(100% - 140px)", "border-radius": "15px"})
                 ],
                 style={
                     "height": "100%",
@@ -294,9 +452,10 @@ def update_map(selected_prefectures, selected_seasons, selected_types, selected_
 # Right panel update
 @app.callback(
     Output("dish-info", "children"),
-    Input("map", "clickData")
+    Input("map", "clickData"),
+    State("user-location", "data")  # <-- [!!修改!!] 添加 State
 )
-def display_dish_info(clickData):
+def display_dish_info(clickData, user_location): # <-- [!!修改!!] 添加 user_location 参数
     if clickData:
         dish_name = clickData["points"][0]["hovertext"]
         row = dishes[dishes["dish_name"] == dish_name]
@@ -304,8 +463,16 @@ def display_dish_info(clickData):
             main_ingredients = row.iloc[0]["main_ingredients"]
             history = row.iloc[0]["history"]
             image_url = row.iloc[0]["image_url"] if "image_url" in row.columns else None
-            return create_right_panel(main_ingredients, history, dish_name=dish_name, image_url=image_url)
-    return create_right_panel()
+            # [!!修改!!] 将 user_location 传递给 create_right_panel
+            return create_right_panel(
+                main_ingredients, 
+                history, 
+                dish_name=dish_name, 
+                image_url=image_url, 
+                user_location=user_location 
+            )
+    
+
 
 if __name__ == '__main__':
     app.run(debug=True)
