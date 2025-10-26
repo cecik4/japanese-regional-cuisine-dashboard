@@ -1,4 +1,4 @@
-﻿id,name,latitude,longitude,rating,price_level,googleMapsUri
+id,name,latitude,longitude,rating,price_level,googleMapsUri
 ChIJ__8PSIMpC18RwV3l2mTGVgE,Aji no Sanpei,43.0588147,141.3536269,4.0,PRICE_LEVEL_MODERATE,https://maps.google.com/?cid=96482578506538433&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA
 ChIJQcC39R-fm18R6j9xV-cGqBM,A-FACTORY,40.82999650000001,140.7349272,4.3,PRICE_LEVEL_MODERATE,https://maps.google.com/?cid=1416389673482272746&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA
 ChIJ3bJcqB6fm18RruCZ6EBTv-Q,Aomori Gyosai Center (Aomori Nokkedon),40.8258967,140.7359117,4.1,,https://maps.google.com/?cid=16482984699444715694&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA
@@ -42,7 +42,6 @@ ChIJB7H6BdgFImAR06acxxXZ7g4,Tsukubasan Shrine,36.2137806,140.10132249999998,4.3,
 ChIJH1yPOxxtImAR1Ma25cBIoEI,Tsuchiura City Kasumigaura Comprehensive Park,36.0633982,140.22006389999999,4.1,,https://maps.google.com/?cid=4800917196101830356&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA
 ChIJAwDhOMdsImARSNerfRiyU6A,れんこん吉田農園直売所,36.0836139,140.2436133,4.6,,https://maps.google.com/?cid=11552773287392827208&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA
 ChIJiSri5TRtImARb_yLekmVFBU,Tsukuba Kasumigaura Ring Ring Road,36.084402,140.2149662,4.1,,https://maps.google.com/?cid=1519003117151845487&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA
-ChIJt43VZ0IkImARkblBKJUzdh0,Kairakuen,36.3754136,140.4538299,4.2,,https://maps.google.com/?cid=2122940990070307217&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA
 ChIJtZg_udRzIWARDC252eZ3Gdk,Izura Coast,36.8332533,140.8027626,4.1,,https://maps.google.com/?cid=15643666614027103500&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA
 ChIJ3dTMhdWmH2ARk-3jXiYGiZQ,Nikko Yubamaki ZEN,36.752369,139.606485,4.2,PRICE_LEVEL_MODERATE,https://maps.google.com/?cid=10703092751293214099&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA
 ChIJLzVs3Ac9H2AR0kilclIntgA,"Awashimado.Co.,Ltd Tochigi Sano Factory",36.3806004,139.56712059999998,4.2,PRICE_LEVEL_INEXPENSIVE,https://maps.google.com/?cid=51271680825575634&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA
@@ -69,11 +68,6 @@ ChIJq3Vfaho3GWARCVslJPpBQpc,Arasawaya Inn,35.808099,139.095441,4.4,,https://maps
 ChIJP9YlUsgwGWAR13KKalMPzT8,Hatonosu Canyon,35.813471899999996,139.1287523,4.3,,https://maps.google.com/?cid=4597347645559304919&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA
 ChIJV2IVp5w6GWARKdQwK_H6gBo,キャニオンズ奥多摩 Canyons Okutama,35.8073036,139.173587,4.6,,https://maps.google.com/?cid=1909802155723772969&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA
 ChIJEa7iuW-JGGARTohiUhxwS9o,Tsukuda,35.6692074,139.7843792,,,https://maps.google.com/?cid=15729789390465173582&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA
-ChIJ1XmcuS08GGARRu_RsdLdvV0,Okumotomikan Orchards,35.188849999999995,139.64675,4.2,,https://maps.google.com/?cid=6754798913121808198&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA
-ChIJq176uo88GGARw68q2RNpEwQ,Kurobatei Honten,35.1418878,139.62147059999998,4.2,PRICE_LEVEL_MODERATE,https://maps.google.com/?cid=293693934677962691&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA
-ChIJW0ZMroU8GGAR8TOQYZVOwes,SHOWAMARU,35.141478,139.617586,4.1,PRICE_LEVEL_MODERATE,https://maps.google.com/?cid=16987945672912155633&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA
-ChIJ1YXIurQ9GGARvm4e7YzCJuU,Shimotomikan Orchards,35.1757215,139.6510379,4.5,,https://maps.google.com/?cid=16512098994329906878&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA
-ChIJz9Tl35w8GGARpyrAvxjduGU,Kanea,35.1353645,139.61207969999998,4.2,PRICE_LEVEL_MODERATE,https://maps.google.com/?cid=7329851491911477927&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA
 ChIJ1XmcuS08GGARRu_RsdLdvV0,Okumotomikan Orchards,35.188849999999995,139.64675,4.2,,https://maps.google.com/?cid=6754798913121808198&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA
 ChIJq176uo88GGARw68q2RNpEwQ,Kurobatei Honten,35.1418878,139.62147059999998,4.2,PRICE_LEVEL_MODERATE,https://maps.google.com/?cid=293693934677962691&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA
 ChIJW0ZMroU8GGAR8TOQYZVOwes,SHOWAMARU,35.141478,139.617586,4.1,PRICE_LEVEL_MODERATE,https://maps.google.com/?cid=16987945672912155633&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQQAhgEIAA
